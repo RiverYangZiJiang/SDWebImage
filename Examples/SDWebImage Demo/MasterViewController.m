@@ -11,9 +11,20 @@
 #import <SDWebImage/FLAnimatedImageView+WebCache.h>
 #import <SDWebImage/UIView+WebCache.h>
 
+
+/**
+ 自定义显示图片列表的单元格
+ */
 @interface MyCustomTableViewCell : UITableViewCell
 
+/**
+ 显示第n张图片，ru“Image #0”格式
+ */
 @property (nonatomic, strong) UILabel *customTextLabel;
+
+/**
+ 显示动图的第三方imageView https://github.com/Flipboard/FLAnimatedImage
+ */
 @property (nonatomic, strong) FLAnimatedImageView *customImageView;
 
 @end
@@ -49,16 +60,19 @@
     if (self)
     {
         self.title = @"SDWebImage";
+        // 设置右上角"Clear Cache"按钮
         self.navigationItem.rightBarButtonItem = [UIBarButtonItem.alloc initWithTitle:@"Clear Cache"
                                                                                 style:UIBarButtonItemStylePlain
                                                                                target:self
                                                                                action:@selector(flushCache)];
         
+        // NTLM认证样例
         // HTTP NTLM auth example
         // Add your NTLM image url to the array below and replace the credentials
         [SDWebImageManager sharedManager].imageDownloader.username = @"httpwatch";
         [SDWebImageManager sharedManager].imageDownloader.password = @"httpwatch01";
         
+        // 各种格式图片，包括需要认证的图片、gif等图、png、jpg
         self.objects = [NSMutableArray arrayWithObjects:
                     @"http://www.httpwatch.com/httpgallery/authentication/authenticatedimage/default.aspx?0.35786508303135633",     // requires HTTP auth, used to demo the NTLM auth
                     @"http://assets.sbnation.com/assets/2512203/dogflops.gif",
@@ -72,6 +86,7 @@
                     @"http://via.placeholder.com/200x200.jpg",
                     nil];
 
+        // 再增加100张图片
         for (int i=0; i<100; i++) {
             [self.objects addObject:[NSString stringWithFormat:@"https://s3.amazonaws.com/fast-image-cache/demo-images/FICDDemoImage%03d.jpg", i]];
         }
@@ -84,7 +99,9 @@
 
 - (void)flushCache
 {
+    // 静态图片默认在内存会缓存、动图不会
     [SDWebImageManager.sharedManager.imageCache clearMemory];
+    //
     [SDWebImageManager.sharedManager.imageCache clearDiskOnCompletion:nil];
 }
 							
@@ -109,21 +126,25 @@
 {
     static NSString *CellIdentifier = @"Cell";
     
+    // 使用静态变量保存占位图，更省内存
     static UIImage *placeholderImage = nil;
     if (!placeholderImage) {
         placeholderImage = [UIImage imageNamed:@"placeholder"];
     }
     
+    // 创建单元格
     MyCustomTableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
         cell = [[MyCustomTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
         cell.customImageView.sd_imageTransition = SDWebImageTransition.fadeTransition;
     }
 
+    // 设置下载图片时显示转圈及转圈样式
     [cell.customImageView sd_setShowActivityIndicatorView:YES];
     [cell.customImageView sd_setIndicatorStyle:UIActivityIndicatorViewStyleGray];
     
     cell.customTextLabel.text = [NSString stringWithFormat:@"Image #%ld", (long)indexPath.row];
+    // 下载图片 注：下载完图片不需要手动刷新表格或单元格
     [cell.customImageView sd_setImageWithURL:[NSURL URLWithString:self.objects[indexPath.row]]
                             placeholderImage:placeholderImage
                                      options:indexPath.row == 0 ? SDWebImageRefreshCached : 0];

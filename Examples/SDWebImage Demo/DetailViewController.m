@@ -13,13 +13,28 @@
 @interface DetailViewController ()
 
 @property (strong, nonatomic) IBOutlet FLAnimatedImageView *imageView;
+
+
+/**
+ 转圈，被加到imageView
+ */
 @property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
+
+/**
+ 显示图片下载进度
+ */
 @property (strong, nonatomic) UIProgressView *progressView;
 
 @end
 
 @implementation DetailViewController
 
+
+/**
+ 懒加载转圈视图
+
+ @return <#return value description#>
+ */
 - (UIActivityIndicatorView *)activityIndicator
 {
     if (!_activityIndicator) {
@@ -32,11 +47,18 @@
     return _activityIndicator;
 }
 
+
+/**
+ 懒加载进度条视图
+
+ @return <#return value description#>
+ */
 - (UIProgressView *)progressView
 {
     if (!_progressView) {
         _progressView = [[UIProgressView alloc] initWithProgressViewStyle:UIProgressViewStyleDefault];
         [self.view addSubview:_progressView];
+        // 注：progressView的frame在viewDidLayoutSubviews设置
     }
     return _progressView;
 }
@@ -46,9 +68,11 @@
     self.activityIndicator.hidden = NO;
     [self.activityIndicator startAnimating];
     
+    // 避免循环引用
     __weak typeof(self) weakSelf = self;
     [self.imageView sd_setImageWithURL:self.imageURL
                       placeholderImage:nil
+                               // 图片从上到下边下载边显示已下载部分
                                options:SDWebImageProgressiveDownload
                               progress:^(NSInteger receivedSize, NSInteger expectedSize, NSURL *targetURL) {
                                   dispatch_async(dispatch_get_main_queue(), ^{

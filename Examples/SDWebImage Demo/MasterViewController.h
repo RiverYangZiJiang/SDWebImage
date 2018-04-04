@@ -8,6 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
+/**
+ SDWebImage iOS Demo对应的图片列表控制器
+ */
 @interface MasterViewController : UITableViewController
 
 @end
